@@ -145,6 +145,7 @@ def select_multiple_items(items, preselected_items=None, window_title="Select It
     return frame.selected_items
 
 
+#Correr una funcion enviada al mandar llamar el objeto
 class RerunPrompt(wx.Frame):
     def __init__(self, function_to_call, title="", message="Do you want to rerun the process?"):
         super().__init__(None, title=title, size=(600, 300))
@@ -198,8 +199,8 @@ def ask_to_rerun(function_to_call, window_title="", prompt_message="Do you want 
     app.MainLoop()
 
 
-
-class RerunIterPrompt(wx.Frame):
+#Regresa un booleano dependiendo de la eleccion
+class RerunOptionPrompt(wx.Frame):
     def __init__(self, title="Rerun Process?", message="Do you want to rerun the process?"):
         super().__init__(None, title=title, size=(300, 150))
         self.result = None  # Will hold True (Yes) or False (No)
@@ -238,9 +239,9 @@ class RerunIterPrompt(wx.Frame):
             self.result = False
         self.Destroy()
 
-def ask_to_rerun_iter(window_title="Rerun?", prompt_message="Do you want to rerun the process?") -> bool:
+def ask_to_rerun_opt(window_title="Rerun?", prompt_message="Do you want to rerun the process?") -> bool:
     app = wx.App(False)
-    frame = RerunIterPrompt(title=window_title, message=prompt_message)
+    frame = RerunOptionPrompt(title=window_title, message=prompt_message)
     frame.Show()
     app.MainLoop()
     return frame.result

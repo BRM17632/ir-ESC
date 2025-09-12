@@ -167,7 +167,7 @@ def entrenamiento(basic, train_end_date, test_start_date, forecast, future_regre
 
 
 
-def pasos_iniciales(Bs_Hist, fecha_real, fecha_train):
+def pasos_iniciales(Bs_Hist, fecha_real):
     #########Formatos y variables adicionales########################################################
     # Additional variables to include in all DataFrames
     additional_vars = ['Fondeo1dia', 'Cetes28', 'Cetes91', 'Cetes182', 'Cetes364', 
@@ -177,6 +177,14 @@ def pasos_iniciales(Bs_Hist, fecha_real, fecha_train):
                     'SyP', 'ExpNoPetro', 'VIX_BMV', 'VIX_USA']
 
     df_inicial = Bs_Hist[['ds', 'y'] + additional_vars].reset_index(drop=True).copy()
+
+
+    fecha_train = functions.gui.get_user_input(prompt="Ingrese el añomes (AAAAMM) para hacer el corte de train/test:", window_title="Fecha de Corte")
+    if fecha_train is not None:
+        print(f"You entered: {fecha_train}")
+    else:
+        print("No value entered.")
+        sys.exit()
 
     #Formateo de fecha de entrenamiento añomes --> AAAA-MM-DD
     date_train = datetime.strptime(str(fecha_train),"%Y%m")
@@ -292,7 +300,7 @@ def inferencia(model_attributes, future_regressor, Bs_Hist, VarsEco_Base, VarsEc
     functions.gui.ask_to_rerun(function_to_call=lambda: functions.NP_model.save_regressors('future_regressors', future_regressor), 
                      window_title="Resultados", 
                      prompt_message="El modelo corrio exitosamente.\nLos resultados se guardaron en el archivo 'resultados.csv'.\n\nGuardar los nuevos regresores?")
-    rerun = functions.gui.ask_to_rerun_iter(window_title="Reintentar", 
+    rerun = functions.gui.ask_to_rerun_opt(window_title="Reintentar", 
                      prompt_message="Desea reevaluar el modelo?")
     
     if rerun:
@@ -385,17 +393,12 @@ if __name__ == "__main__":
 
 
     #########Entrenamiento###########################################################################
-    
-    fecha_train = functions.gui.get_user_input(prompt="Ingrese el añomes (AAAAMM) para hacer el corte de train/test:", window_title="Fecha de Corte")
-    if fecha_train is not None:
-        print(f"You entered: {fecha_train}")
-    else:
-        print("No value entered.")
-        sys.exit()
 
-    functions.gui.ask_to_rerun(function_to_call=lambda: pasos_iniciales(Bs_Hist, fecha_real, fecha_train), 
-                    window_title="Entrenamiento", 
+    train_choice = functions.gui.ask_to_rerun_opt(window_title="Entrenamiento", 
                     prompt_message="Desea entrenar el modelo?")
+    
+    if train_choice:
+        pasos_iniciales(Bs_Hist, fecha_real)
 
 
     #########Inferencia##############################################################################
