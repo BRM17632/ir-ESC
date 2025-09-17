@@ -1,5 +1,6 @@
 import os
 import sys
+import kaleido
 import pandas as pd
 import pickle
 from datetime import datetime
@@ -59,17 +60,46 @@ def apply_granger_causality(df_inicial, df_train):
 
 def entrenamiento(basic, train_end_date, test_start_date, forecast, future_regressor, granger_results):
 
+    events = []
+    added_events = []
+
+    rerun = functions.gui.ask_to_rerun_opt(window_title="Reintentar", 
+                     prompt_message="Desea agregar un evento?")
+    
+    while rerun:
+        event_name, event_startdate, event_enddate = functions.gui.event_info()
+
+        df_event = pd.DataFrame(
+            {
+                "ds": pd.date_range(start=event_startdate, end=event_enddate, freq='MS'),
+                event_name: 1  # Initialize with 1 for all dates within the range
+            }
+        )
+
+
+        # Merge the 'covid' variable with your existing DataFrame
+        basic = pd.merge(basic, df_event, on='ds', how='left')
+        # Set 'covid' to 0 for dates outside the range
+        basic[event_name] = basic[event_name].fillna(0)
+        basic[basic[event_name]==1.0]
+
+        events.append(df_event)
+        added_events.append(event_name)
+
+        rerun = functions.gui.ask_to_rerun_opt(window_title="Reintentar", 
+                     prompt_message="Desea agregar otro evento?")
+
     # Filter the data based on the cutoff date
     df_train = basic[basic['ds'] < test_start_date]
     df_test = basic[basic['ds'] >= test_start_date]
 
     next_months_df= basic[basic['ds'] >= test_start_date]
-    next_months_df=next_months_df[['ds']+ future_regressor]
+    next_months_df=next_months_df[['ds']+ future_regressor + added_events]
     next_months_df['y']=None
-    next_months_df=next_months_df[['ds','y']+ future_regressor]
+    next_months_df=next_months_df[['ds','y']+ future_regressor + added_events]
     df_train_f=pd.concat([df_train,next_months_df],ignore_index=True)
 
-    lr = functions.NP_model.find_best_lr(basic, test_start_date, forecast, future_regressor)
+    lr = functions.NP_model.find_best_lr(basic, test_start_date, forecast, future_regressor, added_events)
 
 
     # Split the dataset into train and test sets
@@ -77,10 +107,10 @@ def entrenamiento(basic, train_end_date, test_start_date, forecast, future_regre
     df_test = basic[basic['ds'] >= test_start_date].copy()
 
     #Evaluates and saves all errors to a single CSV file for later analysis
-    functions.NP_model.regressor_error(basic, df_train, df_test, lr, test_start_date, forecast, future_regressor)
+    functions.NP_model.regressor_error(basic, df_train, df_test, lr, test_start_date, forecast, future_regressor, added_events)
 
     #Model training
-    importance_scores = functions.NP_model.get_importance_scores(basic, df_train, df_test, lr, test_start_date, forecast, future_regressor)
+    importance_scores = functions.NP_model.get_importance_scores(basic, df_train, df_test, lr, test_start_date, forecast, future_regressor, added_events)
 
     # Prepare data for plotting
     variables = [var for var, score in importance_scores]
@@ -103,7 +133,7 @@ def entrenamiento(basic, train_end_date, test_start_date, forecast, future_regre
     #################################################################################################
 
     #Model training
-    m, metrics = functions.NP_model.train_model(df_train, df_test, lr, forecast, future_regressor)
+    m, metrics = functions.NP_model.train_model(df_train, df_test, lr, forecast, future_regressor, added_events)
 
 
     #################################################################################################
@@ -163,6 +193,9 @@ def entrenamiento(basic, train_end_date, test_start_date, forecast, future_regre
     #Guardamos los regresores
     functions.NP_model.save_regressors('future_regressors', future_regressor)
 
+    #Guardamos los eventos
+    functions.NP_model.save_events('time_events', events)
+
 
 
 
@@ -219,7 +252,7 @@ def pasos_iniciales(Bs_Hist, fecha_real):
 
 
 
-def inferencia(model_attributes, future_regressor, Bs_Hist, VarsEco_Base, VarsEco_Adv, significant_variables):
+def inferencia(model_attributes, future_regressor, Bs_Hist, VarsEco_Base, VarsEco_Adv, significant_variables, events):
     
     
     future_regressor = functions.gui.select_multiple_items(significant_variables, preselected_items=future_regressor, window_title="Seleccione los regresores para usar en el modelo")
@@ -228,6 +261,17 @@ def inferencia(model_attributes, future_regressor, Bs_Hist, VarsEco_Base, VarsEc
 
 
     basic=Bs_Hist[['ds','y']+ future_regressor]
+
+    added_events = []
+
+    for df_event in events:
+        event_name = df_event.columns[1]
+        added_events.append(event_name)
+        # Merge the 'covid' variable with your existing DataFrame
+        basic = pd.merge(basic, df_event, on='ds', how='left')
+        # Set 'covid' to 0 for dates outside the range
+        basic[event_name] = basic[event_name].fillna(0)
+        basic[basic[event_name]==1.0]
 
 
     Esc_Base=VarsEco_Base.loc[VarsEco_Base['aniomes']>fecha_real,['aniomes']+future_regressor]
@@ -238,7 +282,8 @@ def inferencia(model_attributes, future_regressor, Bs_Hist, VarsEco_Base, VarsEc
     Esc_Base['y']=None
     Esc_Base=Esc_Base[['ds','y']+ future_regressor]
     df_base=pd.concat([basic,Esc_Base],ignore_index=True)
-    #df_base['covid']=df_base['covid'].fillna(0)
+    for event_name in added_events:
+        df_base[event_name]=df_base[event_name].fillna(0)
     #df_base.tail()
 
 
@@ -253,8 +298,9 @@ def inferencia(model_attributes, future_regressor, Bs_Hist, VarsEco_Base, VarsEc
     Esc_Adv['y']=None
     Esc_Adv=Esc_Adv[['ds','y']+ future_regressor]
     df_adv=pd.concat([basic,Esc_Adv],ignore_index=True)
-    #df_Adv['covid']=df_Adv['covid'].fillna(0)
-    #df_Adv.tail()
+    for event_name in added_events:
+        df_adv[event_name]=df_adv[event_name].fillna(0)
+    #df_adv.tail()
 
 
     forecast = len(Esc_Base)
@@ -262,7 +308,7 @@ def inferencia(model_attributes, future_regressor, Bs_Hist, VarsEco_Base, VarsEc
 
     #################################################################################################
 
-    df_base_forecast, df_adv_forecast = functions.NP_model.run_model(model_attributes, future_regressor, basic, df_base, df_adv)
+    df_base_forecast, df_adv_forecast = functions.NP_model.run_model(model_attributes, future_regressor, basic, df_base, df_adv, added_events)
 
     df_base_forecast.rename(columns={'yhat1':'y_Base'},inplace=True)
     df_adv_forecast.rename(columns={'yhat1':'y_Adv'},inplace=True)
@@ -403,6 +449,7 @@ if __name__ == "__main__":
 
     #########Inferencia##############################################################################
 
+    #Leemos los archivos guardados previamente para el proyecto
     with open(f'{functions.settings.current_wd}/Proyectos/{functions.settings.project_name}/modelo_NP.pkl', 'rb') as f:
         model_attributes = pickle.load(f)
 
@@ -412,8 +459,11 @@ if __name__ == "__main__":
     with open(f'{functions.settings.current_wd}/Proyectos/{functions.settings.project_name}/granger_results.pkl', 'rb') as f:
         significant_variables = pickle.load(f)
 
+    with open(f'{functions.settings.current_wd}/Proyectos/{functions.settings.project_name}/time_events.pkl', 'rb') as f:
+        events = pickle.load(f)
 
-    inferencia(model_attributes, future_regressor, Bs_Hist, VarsEco_Base, VarsEco_Adv, significant_variables)
+
+    inferencia(model_attributes, future_regressor, Bs_Hist, VarsEco_Base, VarsEco_Adv, significant_variables, events)
 
 
 

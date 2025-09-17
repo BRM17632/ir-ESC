@@ -32,8 +32,16 @@ def save_regressors(name, future_regressor):
     print("Los regresores seleccionados se han guardado correctamente")
 
 
+def save_events(name, events):
+    # Save the future regressors using pickle
+    with open(f'{functions.settings.current_wd}/Proyectos/{functions.settings.project_name}/{name}.pkl', 'wb') as f:
+        pickle.dump(events, f)
 
-def find_best_lr(basic, test_start_date, forecast, regressors):
+    print("Los eventos ingresados se han guardado correctamente")
+
+
+
+def find_best_lr(basic, test_start_date, forecast, regressors, events):
     # Disable logging messages unless there is an error
     set_log_level("ERROR")
     set_random_seed(20)
@@ -71,7 +79,8 @@ def find_best_lr(basic, test_start_date, forecast, regressors):
             n_forecasts=forecast
         )
         
-        #m.add_events('covid')
+        for e in events:
+            m.add_events(e)
         for var in regressors:
             m.add_future_regressor(var)
 
@@ -80,11 +89,9 @@ def find_best_lr(basic, test_start_date, forecast, regressors):
 
         # Prepare the next month's data (future data)
         next_months_df = basic[basic['ds'] >= test_start_date]
-        #next_months_df = next_months_df[['ds'] + regressors + ['covid']]
-        next_months_df = next_months_df[['ds'] + regressors]
+        next_months_df = next_months_df[['ds'] + regressors + events]
         next_months_df['y'] = None
-        #next_months_df = next_months_df[['ds', 'y'] + regressors + ['covid']]
-        next_months_df = next_months_df[['ds', 'y'] + regressors]
+        next_months_df = next_months_df[['ds', 'y'] + regressors + events]
 
         # Concatenate the training data and the future data
         df_test_forecast_all = pd.concat([df_train, next_months_df], ignore_index=True)
@@ -147,7 +154,7 @@ def find_best_lr(basic, test_start_date, forecast, regressors):
 
 
 
-def regressor_error(basic, df_train, df_test, lr, test_start_date, forecast, regressors):
+def regressor_error(basic, df_train, df_test, lr, test_start_date, forecast, regressors, events):
     set_random_seed(20)
 
     errors = []  # To store the errors for each regressor
@@ -183,7 +190,8 @@ def regressor_error(basic, df_train, df_test, lr, test_start_date, forecast, reg
             n_forecasts=forecast  # Define the `forecast` variable appropriately
         )
 
-        #m.add_events('covid')
+        for e in events:
+            m.add_events(e)
 
         # Add regressors excluding the current variable
         for var in regressors:
@@ -195,15 +203,13 @@ def regressor_error(basic, df_train, df_test, lr, test_start_date, forecast, reg
 
         # Prepare the next month's data (future data)
         next_months_df = basic[basic['ds'] >= test_start_date]
-        #next_months_df = next_months_df[['ds'] + [var for var in regressors if var != excluded_var] + ['covid']]
-        next_months_df = next_months_df[['ds'] + [var for var in regressors if var != excluded_var]]
+        next_months_df = next_months_df[['ds'] + [var for var in regressors if var != excluded_var] + events]
 
         # Set 'y' as None for future data (since we are predicting it)
         next_months_df['y'] = None
 
         # Reorder columns as needed: ['ds', 'y', future regressors, 'covid']
-        #next_months_df = next_months_df[['ds', 'y'] + [var for var in regressors if var != excluded_var] + ['covid']]
-        next_months_df = next_months_df[['ds', 'y'] + [var for var in regressors if var != excluded_var]]
+        next_months_df = next_months_df[['ds', 'y'] + [var for var in regressors if var != excluded_var] + events]
 
         # Concatenate the training data and the future data
         df_test_forecast = pd.concat([df_train_excluded, next_months_df], ignore_index=True)
@@ -238,7 +244,7 @@ def regressor_error(basic, df_train, df_test, lr, test_start_date, forecast, reg
 
 
 
-def get_importance_scores(basic, df_train, df_test, lr, test_start_date, forecast, regressors):
+def get_importance_scores(basic, df_train, df_test, lr, test_start_date, forecast, regressors, events):
     set_random_seed(20)
 
     # Store the errors for comparison
@@ -253,7 +259,9 @@ def get_importance_scores(basic, df_train, df_test, lr, test_start_date, forecas
         yearly_seasonality='auto',
         n_forecasts=forecast  # Define the `forecast` variable appropriately
     )
-    #m_all.add_events('covid')
+
+    for e in events:
+        m_all.add_events(e)
 
     # Add all regressors to the model
     for var in regressors:
@@ -265,9 +273,9 @@ def get_importance_scores(basic, df_train, df_test, lr, test_start_date, forecas
 
     # Prepare the next month's data (future data)
     next_months_df = basic[basic['ds'] >= test_start_date]
-    next_months_df = next_months_df[['ds'] + regressors]
+    next_months_df = next_months_df[['ds'] + regressors + events]
     next_months_df['y'] = None
-    next_months_df = next_months_df[['ds', 'y'] + regressors]
+    next_months_df = next_months_df[['ds', 'y'] + regressors + events]
 
     # Concatenate the training data and the future data
     df_test_forecast_all = pd.concat([df_train, next_months_df], ignore_index=True)
@@ -306,7 +314,7 @@ def get_importance_scores(basic, df_train, df_test, lr, test_start_date, forecas
 
 
 
-def train_model(df_train, df_test, lr, forecast, regressors):
+def train_model(df_train, df_test, lr, forecast, regressors, events):
     set_log_level("ERROR")
     set_random_seed(20)
     
@@ -317,7 +325,8 @@ def train_model(df_train, df_test, lr, forecast, regressors):
             n_forecasts=forecast,        
     )
 
-    #m.add_events('covid')
+    for e in events:
+        m.add_events(e)
     for var in regressors:
         print(f' variable: {var}')
         m.add_future_regressor(var)
@@ -331,8 +340,12 @@ def train_model(df_train, df_test, lr, forecast, regressors):
 
 
 
-def run_model(model_attributes, future_regressor, basic, df_base, df_adv):
+def run_model(model_attributes, future_regressor, basic, df_base, df_adv, events):
     m = NeuralProphet(**model_attributes)
+
+
+    for e in events:
+        m.add_events(e)
 
     # Add future regressors
     for regressor in future_regressor:

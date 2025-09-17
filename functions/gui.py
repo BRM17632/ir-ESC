@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 import wx
+import wx.adv
 import threading
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 
@@ -319,3 +320,74 @@ def show_plot_in_wx_gui(fig, window_title="Plot Viewer"):
     frame = PlotViewer(fig, title=window_title)
     frame.Show()
     app.MainLoop()
+
+
+
+
+class EventPrompt(wx.Frame):
+    def __init__(self, title="Input with Dates"):
+        super().__init__(parent=None, title=title, size=(400, 300))
+
+        self.text = None
+        self.startdate = None
+        self.enddate = None
+
+
+        panel = wx.Panel(self)
+
+        # Layout using a vertical BoxSizer
+        vbox = wx.BoxSizer(wx.VERTICAL)
+
+        # Text input
+        self.text_label = wx.StaticText(panel, label="Nombre:")
+        self.text_ctrl = wx.TextCtrl(panel)
+
+        # Start date
+        self.start_date_label = wx.StaticText(panel, label="Fecha de Inicio:")
+        self.start_date_picker = wx.adv.DatePickerCtrl(panel)
+
+        # End date
+        self.end_date_label = wx.StaticText(panel, label="Fecha de Fin:")
+        self.end_date_picker = wx.adv.DatePickerCtrl(panel)
+
+        # Add widgets to sizer
+        vbox.Add(self.text_label, flag=wx.LEFT | wx.TOP, border=10)
+        vbox.Add(self.text_ctrl, flag=wx.EXPAND | wx.LEFT | wx.RIGHT, border=10)
+        vbox.AddSpacer(10)
+
+        vbox.Add(self.start_date_label, flag=wx.LEFT, border=10)
+        vbox.Add(self.start_date_picker, flag=wx.LEFT | wx.RIGHT, border=10)
+        vbox.AddSpacer(10)
+
+        vbox.Add(self.end_date_label, flag=wx.LEFT, border=10)
+        vbox.Add(self.end_date_picker, flag=wx.LEFT | wx.RIGHT, border=10)
+        vbox.AddSpacer(20)
+        
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        btn_ok = wx.Button(panel, label="OK")
+        btn_cancel = wx.Button(panel, label="Cancel")
+        hbox.Add(btn_ok, flag=wx.RIGHT, border=10)
+        hbox.Add(btn_cancel)
+
+        vbox.Add(hbox, flag=wx.ALIGN_CENTER | wx.ALL, border=10)
+
+        panel.SetSizer(vbox)
+
+        btn_ok.Bind(wx.EVT_BUTTON, self.on_ok)
+        btn_cancel.Bind(wx.EVT_BUTTON, self.on_cancel)
+
+    def on_ok(self, event):
+        self.text = self.text_ctrl.GetValue()
+        self.startdate = self.start_date_picker.GetValue().FormatISODate()
+        self.enddate = self.end_date_picker.GetValue().FormatISODate()
+        self.Close()
+
+    def on_cancel(self, event):
+        self.Close()
+
+def event_info(window_title="Add Event"):
+    app = wx.App()
+    frame = EventPrompt(title=window_title)
+    frame.Show()
+    app.MainLoop()
+    return frame.text, frame.startdate, frame.enddate
