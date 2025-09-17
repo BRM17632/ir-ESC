@@ -360,8 +360,12 @@ def inferencia(model_attributes, future_regressor, Bs_Hist, VarsEco_Base, VarsEc
 if __name__ == "__main__":
 
     functions.settings.project_name = functions.gui.get_user_input(prompt="Introduzca el nombre del proyecto:", window_title="Titulo")
-    functions.settings.create_dir()
-    print(functions.settings.project_name)
+    if functions.settings.project_name is not None:
+        functions.settings.create_dir()
+        print(functions.settings.project_name)
+    else:
+        print("No input received.")
+        sys.exit()
 
     #########Carga de datos##########################################################################
     df = functions.gui.select_file_via_gui(window_title="Seleccione el archivo con datos historicos")
