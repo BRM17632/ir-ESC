@@ -340,17 +340,21 @@ def inferencia(model_attributes, future_regressor, Bs_Hist, VarsEco_Base, VarsEc
     #################################################################################################
 
     resultados = df_Estres[['ds','y_Base','y_Adv']].iloc[-forecast:]
-    resultados.to_csv(f'{functions.settings.current_wd}/Proyectos/{functions.settings.project_name}/Output/resultados.csv', index=False)
 
 
-    functions.gui.ask_to_rerun(function_to_call=lambda: functions.NP_model.save_regressors('future_regressors', future_regressor), 
-                     window_title="Resultados", 
-                     prompt_message="El modelo corrio exitosamente.\nLos resultados se guardaron en el archivo 'resultados.csv'.\n\nGuardar los nuevos regresores?")
+    save_opt = functions.gui.ask_to_rerun_opt(window_title="Resultados", 
+                     prompt_message="El modelo corrio exitosamente.\n\nDesea guardar los resultados?")
+    
+    if save_opt:
+        resultados.to_csv(f'{functions.settings.current_wd}/Proyectos/{functions.settings.project_name}/Output/resultados.csv', index=False)
+        functions.NP_model.save_regressors('future_regressors', future_regressor)
+
+
     rerun = functions.gui.ask_to_rerun_opt(window_title="Reintentar", 
                      prompt_message="Desea reevaluar el modelo?")
     
     if rerun:
-        inferencia(model_attributes, future_regressor, Bs_Hist, VarsEco_Base, VarsEco_Adv, significant_variables)
+        inferencia(model_attributes, future_regressor, Bs_Hist, VarsEco_Base, VarsEco_Adv, significant_variables, events)
     
 
 
