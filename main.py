@@ -117,7 +117,7 @@ def entrenamiento(basic, train_end_date, test_start_date, forecast, future_regre
     scores = [score for var, score in importance_scores]
 
 
-    #################################################################################################
+    #*################################################################################################
     # Create a DataFrame for seaborn
     df_importance = pd.DataFrame({'Variable': variables, 'Importance Score': scores})
 
@@ -130,13 +130,13 @@ def entrenamiento(basic, train_end_date, test_start_date, forecast, future_regre
     plt.grid(axis='x', linestyle='--', alpha=0.7)
     plt.show()
     fig.savefig(f'{functions.settings.current_wd}/Proyectos/{functions.settings.project_name}/Output/Importance_Scores.png', dpi=fig.dpi)
-    #################################################################################################
+    #*################################################################################################
 
     #Model training
     m, metrics = functions.NP_model.train_model(df_train, df_test, lr, forecast, future_regressor, added_events)
 
 
-    #################################################################################################
+    #*################################################################################################
     # Create a larger figure
     fig = plt.figure(figsize=(12, 6))
     # Plot training loss curve
@@ -151,7 +151,7 @@ def entrenamiento(basic, train_end_date, test_start_date, forecast, future_regre
     # Show the plot
     plt.show()
     fig.savefig(f'{functions.settings.current_wd}/Proyectos/{functions.settings.project_name}/Output/Model_Loss.png', dpi=fig.dpi)
-    #################################################################################################
+    #*################################################################################################
 
 
     #m.plot_parameters().savefig('Model_Parameters.png')
@@ -165,7 +165,7 @@ def entrenamiento(basic, train_end_date, test_start_date, forecast, future_regre
     m.plot(df_train_forecast)
 
 
-    #################################################################################################
+    #*################################################################################################
     dd= df_train_forecast.merge(basic[['ds','y']], left_on='ds', right_on='ds', how='outer')
     dd[['ds','y_y','yhat1']].tail(forecast+1)
     # Extract 'ds', 'yhat1', and 'y_y' columns from the DataFrame
@@ -184,7 +184,7 @@ def entrenamiento(basic, train_end_date, test_start_date, forecast, future_regre
     plt.legend()
     plt.show()
     fig.savefig(f'{functions.settings.current_wd}/Proyectos/{functions.settings.project_name}/Output/Comparacion_training.png', dpi=fig.dpi)
-    #################################################################################################
+    #*################################################################################################
 
 
     #Guardamos el modelo entrenado
@@ -201,7 +201,7 @@ def entrenamiento(basic, train_end_date, test_start_date, forecast, future_regre
 
 
 def pasos_iniciales(Bs_Hist, fecha_real):
-    #########Formatos y variables adicionales########################################################
+    #*########Formatos y variables adicionales########################################################
     # Additional variables to include in all DataFrames
     additional_vars = ['Fondeo1dia', 'Cetes28', 'Cetes91', 'Cetes182', 'Cetes364', 
                     'BonoM3', 'BonoM5', 'BonoM10', 'TasaFedEUA', 'Tbill1m', 'Tbill3m', 
@@ -229,12 +229,12 @@ def pasos_iniciales(Bs_Hist, fecha_real):
     #################################################################################################
 
     
-    #########Granger Causality#######################################################################
+    #*########Granger Causality#######################################################################
     df_red, future_regressor, granger_results = apply_granger_causality(df_inicial, df_train)
 
 
 
-    #########Entrenamiento###########################################################################
+    #*########Entrenamiento###########################################################################
     train_end_date = date_train
     test_start_date = train_end_date + pd.DateOffset(months=1)
 
@@ -248,7 +248,7 @@ def pasos_iniciales(Bs_Hist, fecha_real):
     basic=df_red[['ds','y']+ future_regressor]
 
     entrenamiento(basic, train_end_date, test_start_date, forecast, future_regressor, granger_results)
-    #################################################################################################
+    #*################################################################################################
 
 
 
@@ -306,7 +306,7 @@ def inferencia(model_attributes, future_regressor, Bs_Hist, VarsEco_Base, VarsEc
     forecast = len(Esc_Base)
     print("Numero de predicciones: " + str(forecast))
 
-    #################################################################################################
+    #*################################################################################################
 
     df_base_forecast, df_adv_forecast = functions.NP_model.run_model(model_attributes, future_regressor, basic, df_base, df_adv, added_events)
 
@@ -337,7 +337,7 @@ def inferencia(model_attributes, future_regressor, Bs_Hist, VarsEco_Base, VarsEc
     # Show it in wx GUI
     functions.gui.show_plot_in_wx_gui(fig, window_title="Forecast")
 
-    #################################################################################################
+    #*################################################################################################
 
     resultados = df_Estres[['ds','y_Base','y_Adv']].iloc[-forecast:]
 
@@ -371,7 +371,7 @@ if __name__ == "__main__":
         print("No input received.")
         sys.exit()
 
-    #########Carga de datos##########################################################################
+    #*########Carga de datos##########################################################################
     df = functions.gui.select_file_via_gui(window_title="Seleccione el archivo con datos historicos")
     if df is not None:
         col_fecha = functions.gui.select_column_from_dataframe(df, window_title="Seleccione la columna de fecha")
@@ -435,7 +435,7 @@ if __name__ == "__main__":
     Bs_Hist = df.merge(Eco_Base, how='left', on='aniomes')
 
 
-    #################################################################################################
+    #*################################################################################################
 
     # Rename the selected columns
     Bs_Hist.rename(columns={'aniomes':'ds'},inplace=True)
@@ -446,7 +446,7 @@ if __name__ == "__main__":
 
 
 
-    #########Entrenamiento###########################################################################
+    #*########Entrenamiento###########################################################################
 
     train_choice = functions.gui.ask_to_rerun_opt(window_title="Entrenamiento", 
                     prompt_message="Desea entrenar el modelo?")
@@ -455,7 +455,7 @@ if __name__ == "__main__":
         pasos_iniciales(Bs_Hist, fecha_real)
 
 
-    #########Inferencia##############################################################################
+    #*########Inferencia##############################################################################
 
     #Leemos los archivos guardados previamente para el proyecto
     with open(f'{functions.settings.current_wd}/Proyectos/{functions.settings.project_name}/modelo_{functions.settings.project_name}.pkl', 'rb') as f:
