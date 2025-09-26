@@ -458,7 +458,7 @@ if __name__ == "__main__":
     #########Inferencia##############################################################################
 
     #Leemos los archivos guardados previamente para el proyecto
-    with open(f'{functions.settings.current_wd}/Proyectos/{functions.settings.project_name}/modelo_NP.pkl', 'rb') as f:
+    with open(f'{functions.settings.current_wd}/Proyectos/{functions.settings.project_name}/modelo_{functions.settings.project_name}.pkl', 'rb') as f:
         model_attributes = pickle.load(f)
 
     with open(f'{functions.settings.current_wd}/Proyectos/{functions.settings.project_name}/future_regressors.pkl', 'rb') as f:

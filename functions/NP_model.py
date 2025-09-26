@@ -18,7 +18,7 @@ def save_model_attributes(forecast, lr):
         "n_forecasts": forecast,
         }
     # Save the model attributes using pickle
-    with open(f'{functions.settings.current_wd}/Proyectos/{functions.settings.project_name}/modelo_NP.pkl', 'wb') as f:
+    with open(f'{functions.settings.current_wd}/Proyectos/{functions.settings.project_name}/modelo_{functions.settings.project_name}.pkl', 'wb') as f:
         pickle.dump(model_attributes, f)
 
     print("El modelo se ha guardado correctamente")
