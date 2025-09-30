@@ -6,3 +6,4 @@ Datos/
 build/
 dist/
 *.spec
+*.tar.gz
