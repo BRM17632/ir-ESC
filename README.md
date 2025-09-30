@@ -19,7 +19,9 @@ Para generar el ejectubale del cascaron del modelo Neural Prophet, se debe prime
 Este en automatico tomara los dos codigos en la carpeta **hooks** para tomar en cuenta los archivos **version.info** de dos librerias: pytorch_lightning y ightning_fabric.
 
 #### Mac
-Para poder compartir el ejectuable para Mac, primero se debe poner en misma carpeta **dist** el archivo **quarantine-fix.sh** que se encuentra en la carpeta **utils**, y despues es necesario correr el comando 
+Para poder compartir el ejectuable para Mac, es necesario correr el siguiente comando en el directorio base: 
     tar -czf <nombre del archivo comprimido>.tar.gz dist
 
-Ese archivo luego puede ser descargado y primero se debera correr el archivo **quarantine-fix.sh** una unica vez, y ya se podra correr el ejectuable.
+Ese archivo luego puede ser descargado, y al descomprimirlo se debe abrir la terminal en la carpeta donde se tiene guardado el ejectuable y correr el comando:
+    xattr -r -d com.apple.quarantine .
+Al hacer esto ya será posible correr el ejectuable.
