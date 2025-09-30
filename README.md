@@ -20,8 +20,8 @@ Este en automatico tomara los dos codigos en la carpeta **hooks** para tomar en 
 
 #### Mac
 Para poder compartir el ejectuable para Mac, es necesario correr el siguiente comando en el directorio base: 
-    tar -czf <nombre del archivo comprimido>.tar.gz dist
+    `tar -czf <nombre del archivo comprimido>.tar.gz dist`
 
 Ese archivo luego puede ser descargado, y al descomprimirlo se debe abrir la terminal en la carpeta donde se tiene guardado el ejectuable y correr el comando:
-    xattr -r -d com.apple.quarantine .
+    `xattr -r -d com.apple.quarantine .`
 Al hacer esto ya será posible correr el ejectuable.
