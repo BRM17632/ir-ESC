@@ -5,4 +5,4 @@ Datos/
 .DS_Store
 build/
 dist/
-NeuralProphet_Mac.spec
+*.spec
