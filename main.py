@@ -17,7 +17,12 @@ functions.settings.init()
 import matplotlib
 matplotlib.use('agg')
 
-functions.settings.current_wd = os.getcwd()
+if getattr(sys, 'frozen', False):
+    # Running in a PyInstaller bundle
+    functions.settings.current_wd = os.path.dirname(sys.executable)
+else:
+    # Running as a normal Python script
+    functions.settings.current_wd = os.getcwd()
 
 
 def apply_granger_causality(df_inicial, df_train):
