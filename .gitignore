@@ -3,3 +3,5 @@ Proyectos/
 lightning_logs/
 Datos/
 .DS_Store
+build/
+dist/
