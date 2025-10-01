@@ -357,9 +357,9 @@ def run_model(model_attributes, future_regressor, basic, df_base, df_adv, events
     metrics = m.fit(basic,freq='MS');
 
     df_base_forecast=m.predict(df_base)
-    m.plot(df_base_forecast)
+    #m.plot(df_base_forecast)
 
     df_adv_forecast=m.predict(df_adv)
-    m.plot(df_adv_forecast)
+    #m.plot(df_adv_forecast)
 
     return df_base_forecast, df_adv_forecast

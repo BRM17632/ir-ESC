@@ -167,7 +167,7 @@ def entrenamiento(basic, train_end_date, test_start_date, forecast, future_regre
 
     df_train_forecast=m.predict(df_train_f)
     # Visualize the forecast
-    m.plot(df_train_forecast)
+    #m.plot(df_train_forecast)
 
 
     #*################################################################################################
