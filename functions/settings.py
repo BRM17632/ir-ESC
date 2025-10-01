@@ -8,6 +8,6 @@ def init():
     current_wd = ""
 
 def create_dir():
-    Path(f"Proyectos/{project_name}").mkdir(parents=True, exist_ok=True)
-    Path(f"Proyectos/{project_name}/Output").mkdir(parents=True, exist_ok=True)
-    Path(f"Proyectos/{project_name}/Progress").mkdir(parents=True, exist_ok=True)
+    Path(f"{current_wd}/Proyectos/{project_name}").mkdir(parents=True, exist_ok=True)
+    Path(f"{current_wd}/Proyectos/{project_name}/Output").mkdir(parents=True, exist_ok=True)
+    Path(f"{current_wd}/Proyectos/{project_name}/Progress").mkdir(parents=True, exist_ok=True)
