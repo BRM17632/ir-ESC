@@ -16,10 +16,14 @@ import functions.settings
 functions.settings.init() 
 import matplotlib
 matplotlib.use('agg')
+import multiprocessing
 
 if getattr(sys, 'frozen', False):
     # Running in a PyInstaller bundle
     functions.settings.current_wd = os.path.dirname(sys.executable)
+    #Para que no se duplique el ejectuable mientras corre
+    multiprocessing.set_start_method('forkserver', force=True)
+    multiprocessing.freeze_support()
 else:
     # Running as a normal Python script
     functions.settings.current_wd = os.getcwd()
