@@ -9,7 +9,7 @@ import torch
 import functions.settings
 
 
-def save_model_attributes(forecast, lr):
+def save_model_attributes(forecast, lr, banco=""):
     # Define the model attributes
     model_attributes = {
         "seasonality_mode": 'additive',
@@ -18,23 +18,23 @@ def save_model_attributes(forecast, lr):
         "n_forecasts": forecast,
         }
     # Save the model attributes using pickle
-    with open(f'{functions.settings.current_wd}/Proyectos/{functions.settings.project_name}/modelo_{functions.settings.project_name}.pkl', 'wb') as f:
+    with open(f'{functions.settings.current_wd}/Proyectos/{banco}{functions.settings.project_name}/modelo_{functions.settings.project_name}.pkl', 'wb') as f:
         pickle.dump(model_attributes, f)
 
     print("El modelo se ha guardado correctamente")
 
 
-def save_regressors(name, future_regressor):
+def save_regressors(name, future_regressor, banco=""):
     # Save the future regressors using pickle
-    with open(f'{functions.settings.current_wd}/Proyectos/{functions.settings.project_name}/{name}.pkl', 'wb') as f:
+    with open(f'{functions.settings.current_wd}/Proyectos/{banco}{functions.settings.project_name}/{name}.pkl', 'wb') as f:
         pickle.dump(future_regressor, f)
 
     print("Los regresores seleccionados se han guardado correctamente")
 
 
-def save_events(name, events):
+def save_events(name, events, banco=""):
     # Save the future regressors using pickle
-    with open(f'{functions.settings.current_wd}/Proyectos/{functions.settings.project_name}/{name}.pkl', 'wb') as f:
+    with open(f'{functions.settings.current_wd}/Proyectos/{banco}{functions.settings.project_name}/{name}.pkl', 'wb') as f:
         pickle.dump(events, f)
 
     print("Los eventos ingresados se han guardado correctamente")
@@ -341,6 +341,7 @@ def train_model(df_train, df_test, lr, forecast, regressors, events):
 
 
 def run_model(model_attributes, future_regressor, basic, df_base, df_adv, events):
+    set_random_seed(20)
     m = NeuralProphet(**model_attributes)
 
 
